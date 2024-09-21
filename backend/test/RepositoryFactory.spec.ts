@@ -36,7 +36,15 @@ describe('RepositoryFactory', () => {
     });
 
     it('throws an error when the domain does not exist', () => {
-      //
+      const mockRepository: jest.Mocked<RepositoryInterface<any>> = {
+        findAll: jest.fn(),
+      };
+
+      const mockConstructor = jest.fn(() => mockRepository);
+
+      expect(() => {
+        repositoryFactory.createRepository(mockConstructor);
+      }).toThrow();
     });
 
     it('has the correct methods', () => {
