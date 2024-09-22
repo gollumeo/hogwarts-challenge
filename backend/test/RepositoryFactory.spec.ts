@@ -48,7 +48,9 @@ describe('RepositoryFactory', () => {
     });
 
     it('has the correct methods', () => {
-      //
+      // Arrange
+      // Act
+      // Assert
     });
   });
 });
