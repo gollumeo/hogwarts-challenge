@@ -4,53 +4,44 @@ import { RepositoryInterface } from '../src/shared/application/interfaces/reposi
 
 describe('RepositoryFactory', () => {
   let repositoryFactory: RepositoryFactoryInterface;
-  type GenericEntity = { id: number; name: string };
+  const mockRepository: RepositoryInterface<any> = {
+    findAll: jest.fn(),
+  };
 
   beforeEach(() => {
     repositoryFactory = new RepositoryFactory();
   });
 
-  describe('createRepository', () => {
-    it('implements the RepositoryFactory interface', () => {
-      const repositoryFactory: RepositoryFactoryInterface =
-        new RepositoryFactory();
+  it('should implement RepositoryFactoryInterface', () => {
+    expect(repositoryFactory).toHaveProperty('createRepository');
+    expect(repositoryFactory).toHaveProperty('registerDomain');
+  });
 
-      expect(repositoryFactory).toHaveProperty('createRepository');
+  it('should register a domain and allow repository creation', () => {
+    const MockRepositoryConstructor = jest.fn(() => mockRepository);
 
-      expect(typeof repositoryFactory.createRepository).toBe('function');
-    });
+    repositoryFactory.registerDomain('Test', MockRepositoryConstructor);
 
-    it('creates/instantiates and returns a domain-based repository', () => {
-      const mockRepository: jest.Mocked<RepositoryInterface<GenericEntity>> = {
-        findAll: jest.fn(),
-      };
+    const createdRepository = repositoryFactory.createRepository('Test');
 
-      const mockConstructor = jest.fn(() => mockRepository);
+    expect(MockRepositoryConstructor).toHaveBeenCalledTimes(1);
+    expect(createdRepository).toBe(mockRepository);
+  });
 
-      const createdRepository =
-        repositoryFactory.createRepository<RepositoryInterface<GenericEntity>>(
-          mockConstructor,
-        );
+  it('should throw an error when trying to create a repository for an unregistered domain', () => {
+    expect(() => repositoryFactory.createRepository('FakeTest')).toThrow();
+  });
 
-      expect(createdRepository).toBe(mockRepository);
-    });
+  it('should not create a new instance if one already exists', () => {
+    const MockRepositoryConstructor = jest.fn(() => mockRepository);
 
-    it('throws an error when the domain does not exist', () => {
-      const mockRepository: jest.Mocked<RepositoryInterface<any>> = {
-        findAll: jest.fn(),
-      };
+    repositoryFactory.registerDomain('Test', MockRepositoryConstructor);
 
-      const mockConstructor = jest.fn(() => mockRepository);
+    const createdRepository = repositoryFactory.createRepository('Test');
+    const createdRepository2 = repositoryFactory.createRepository('Test');
 
-      expect(() => {
-        repositoryFactory.createRepository(mockConstructor);
-      }).toThrow();
-    });
-
-    it('has the correct methods', () => {
-      // Arrange
-      // Act
-      // Assert
-    });
+    expect(MockRepositoryConstructor).toHaveBeenCalledTimes(1);
+    expect(createdRepository).toBe(mockRepository);
+    expect(createdRepository2).toBe(mockRepository);
   });
 });
